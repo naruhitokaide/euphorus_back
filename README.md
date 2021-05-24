@@ -1,4 +1,4 @@
-# Happiness API Back End
+# Country Happiness API Back End
 
 This project was the backend for assignment 1 in CAB230 which required use to build endpoints to satisfy a predefined Swagger document. 
 
