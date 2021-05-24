@@ -1,6 +1,6 @@
 openapi: 3.0.0
 info:
-  title: World Hapsdsdpiness Rankings
+  title: World Happiness Rankings
   description: This API has been created to support the assessment in QUT's CAB230 Web Computing unit. It exposes a small number of REST endpoints which implement CRUD operations on a database containing publicly available data from the World Happiness Report (https://en.wikipedia.org/wiki/World_Happiness_Report) - an annual survey that ranks the overall happiness of a country according to the views of its citizens on a range of happiness measures. This API provides access to the survey data for the years 2015 to 2020 (inclusive). The API endpoints and their usage are described in detail below.
 
   version: 1.0.0
@@ -109,66 +109,57 @@ paths:
   /factors/{year}:
     get:
       tags: [Data]
+      description: Returns a list of countries and their associated happiness factor scores for the specified year. The path parameter (year) is required. The number of returned results can be limited by the optional limit query parameter. A result for a single country can be obtained via the optional country query parameter. This route also requires the user to be authenticated - a valid JWT token must be sent in the header of the request. To test this route using Swagger, click the green 'Authorize' button at the top of this page to enter your JWT token. A JWT token can be obtained by logging in.
       security:
         - bearerAuth: []
-      tags: [Queries]
       parameters:
         - in: path
-          name: symbol
+          name: year
           required: true
-          description: The exchange symbol of the stock
-          schema:
-            type: string
-            example: AAL
+          description: Year of world happiness report
         - in: query
-          name: from
-          description: Starting date of entries. Needs to be a string parsable for Date.Parse()
-          schema:
-            type: string
-            example: 2020-03-15
+          name: limit
+          description: The maximum number of results to return
         - in: query
-          name: to
-          description: Finishing date of entries. Needs to be a string parsable for Date.Parse()
-          schema:
-            type: string
-            example: 2020-03-20
+          name: country
+          description: Name of country
       responses:
         "200":
-          description: One or more stock entries that meet the search criteria. By default, the response will be a single object. It at least one valid to or from query is supplied with a valid date then the response will be an array of stock objects. 
+          description: An array of objects containing happiness rank, country, score, economy, family, health, freedom, generosity and trust properties. An example of one object in the array is shown below. 
           content:
             application/json:
               schema:
                 type: object
                 properties:
-                  timestamp:
+                  rank:
+                    type: number
+                    example: 1
+                  country:
                     type: string
-                    example: 2020-03-22T14:00:00.000Z
-                  symbol:
+                    example: Finland
+                  score:
                     type: string
-                    example: AAL
-                  name:
+                    example: 7.769
+                  economy:
                     type: string
-                    example: American Airlines Group
-                  industry:
+                    example: 1.340
+                  family:
                     type: string
-                    example: Industrials
-                  open:
-                    type: number
-                    example: 10.9
-                  high:
-                    type: number
-                    example: 11.36
-                  low:
-                    type: number
-                    example: 10.01
-                  close:
-                    type: number
-                    example: 10.25
-                  volumes:
-                    type: number
-                    example: 55491000
+                    example: 1.587
+                  health:
+                    type: string
+                    example: 1.340
+                  freedom:
+                    type: string
+                    example: 0.596
+                  generosity:
+                    type: string
+                    example: 0.153
+                  trust:
+                    type: string
+                    example: 0.393
         "400":
-          description: Invalid query parameter or date format
+          description: Invalid parameters. Click on 'Schema' below to see the possible error responses.
           content:
             application/json:
               schema:
@@ -179,9 +170,9 @@ paths:
                     example: true
                   message:
                     type: string
-                    example: Parameters allowed are 'from' and 'to', example: /stocks/authed/AAL?from=2020-03-15
-        "403":
-          description: Access denied
+                    example: Invalid year format. Format must be yyyy.
+        "401":
+          description: Unauthorized. Click on 'Schema' below to see the possible error responses.
           content:
             application/json:
               schema:
@@ -192,24 +183,11 @@ paths:
                     example: true
                   message:
                     type: string
-                    example: Authorization header not found
-        "404":
-          description: Queried data not found
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  error:
-                    type: boolean
-                    example: true
-                  message:
-                    type: string
-                    example: No entries available for query symbol for supplied date range
+                    example: Authorization header ('Bearer token') not found
   /user/register:
     post:
-      summary: Create a new user account
-      tags: [Users]
+      tags: [Authentication]
+      description: Creates a new user account. A request body containing the user to be registered must be sent.
       requestBody:
         description: User object to be registered
         required: true
@@ -220,21 +198,18 @@ paths:
               properties:
                 email:
                   type: string
-                  example: example@api.com
+                  example: mike@gmail.com
                 password:
                   type: string
                   example: asdlkfj1
       responses:
         "201":
-          description: User created
+          description: User successfully created
           content:
             application/json:
               schema:
                 type: object
                 properties:
-                  success:
-                    type: boolean
-                    example: true
                   message:
                     type: string
                     example: User created
@@ -250,7 +225,7 @@ paths:
                     example: true
                   message:
                     type: string
-                    example: Request body incomplete - email and password needed
+                    example: Request body incomplete, both email and password are required
         "409":
           description: User already exists
           content:
@@ -263,11 +238,11 @@ paths:
                     example: true
                   message:
                     type: string
-                    example: User already exists!
+                    example: User already exists
   /user/login:
     post:
-      summary: Log in to existing account
-      tags: [Users]
+      tags: [Authentication]
+      description: Log in to an existing user account. A request body containing the user credentials must be sent.
       requestBody:
         description: User object used to log in
         required: true
@@ -325,3 +300,112 @@ paths:
                   message:
                     type: string
                     example: Request body invalid - email and password are required
+  /user/{email}/profile:
+    get:
+      tags: [Profile]
+      description: Returns an object containing a user's profile information. The path parameter (email) is required and must be an email that has been registered. This route returns additional information if the user is authenticated. To be authenticated, a valid JWT token must be sent in the header of the request. To test this using Swagger, click the green 'Authorize' button at the top of this page to enter your JWT token. A JWT token can be obtained by logging in.
+      security:
+      - bearerAuth: []
+      parameters:
+        - in: path
+          name: year
+          required: true
+          description: Email address of a registerd user
+      responses:
+        "200":
+          description: An object containing email, firstName, lastName, address (authenticated only) and dob (authenticated only) properties. An example object for an authenticated request is shown below. If no profile information has been entered for the user via the profile PUT request route, all returned values except email are expected to be null. Click on 'Schema' below to see a response example for an unauthenticated request.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  email:
+                    type: string
+                    example: mike@gmail.com
+                  firstName:
+                    type: string
+                    example: Michael
+                  lastName:
+                    type: string
+                    example: Jordan
+                  dob:
+                    type: string
+                    example: "1963-02-17"
+                  address:
+                    type: string
+                    example: "123 Fake Street, Springfield"
+        "401":
+          description: Unauthorized. Click on 'Schema' below to see the possible error responses.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: JWT token has expired
+        "404":
+          description: User not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: User not found
+  /user/{email}/profile:
+    put:
+      tags: [Profile]
+      description: Updates a user's profile information. The path parameter (email) is required and must be an email that has been registered. A request body containing the user's profile information must be sent. This route returns an object containing the user's updated profile information. This route also requires the user to be authenticated - a valid JWT token must be sent in the header of the request. To test this route using Swagger, click the green 'Authorize' button at the top of this page to enter your JWT token. A JWT token can be obtained by logging in.
+      security:
+      - bearerAuth: []
+      parameters:
+        - in: path
+          name: year
+          required: true
+          description: Email address of a registerd user
+      responses:
+        "200":
+          description: An object containing email, firstName, lastName, address (authenticated only) and dob (authenticated only) properties. An example object for an authenticated request is shown below. If no profile information has been entered for the user via the profile PUT request route, all returned values except email are expected to be null. Click on 'Schema' below to see a response example for an unauthenticated request.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  email:
+                    type: string
+                    example: mike@gmail.com
+                  firstName:
+                    type: string
+                    example: Michael
+                  lastName:
+                    type: string
+                    example: Jordan
+                  dob:
+                    type: string
+                    example: "1963-02-17"
+                  address:
+                    type: string
+                    example: "123 Fake Street, Springfield"
+        "401":
+          description: Unauthorized. Click on 'Schema' below to see the possible error responses.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: JWT token has expired
+                
+  
