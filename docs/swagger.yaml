@@ -72,53 +72,27 @@ paths:
                   message:
                     type: string
                     example: Industry sector not found
-  /stocks/{symbol}:
+  /countries:
     get:
-      summary: Returns the latest entry for a particular stock searched by symbol (1-5 upper case letters).  
-      tags: [Queries]
-      parameters:
-        - in: path
-          name: symbol
-          required: true
-          description: The exchange symbol of the stock
-          schema:
-            type: string
-            example: AAL
+      tags: [Data]
+      description:  Returns a list of all surveyed countries, ordered alphabetically.
       responses:
         "200":
-          description: A stock object 
+          description: An array of countries. An example of the first five elements in the array is shown below.
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  timestamp:
-                    type: string
-                    example: 2020-03-22T14:00:00.000Z
-                  symbol:
-                    type: string
-                    example: AAL
-                  name:
-                    type: string
-                    example: American Airlines Group
-                  industry:
-                    type: string
-                    example: Industrials
-                  open:
-                    type: number
-                    example: 10.9
-                  high:
-                    type: number
-                    example: 11.36
-                  low:
-                    type: number
-                    example: 10.01
-                  close:
-                    type: number
-                    example: 10.25
-                  volumes:
-                    type: number
-                    example: 55491000
+                type: array
+                items:
+                  type: string
+                example:
+                  - Afghanistan
+                  - Albania
+                  - Algeria
+                  - Angola
+                  - Argentina
+
+               
         "400":
           description: Invalid query parameter(s)
           content:
@@ -131,25 +105,12 @@ paths:
                     example: true
                   message:
                     type: string
-                    example: Date parameters only available on authenticated route /stocks/authed
-        "404":
-          description: No entry for the symbol found in the stocks database.
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  error:
-                    type: boolean
-                    example: true
-                  message:
-                    type: string
-                    example: No entry for symbol in stocks database
-  /stocks/authed/{symbol}:
+                    example: Invalid query parameters. Query parameters are not permitted.
+  /factors/{year}:
     get:
+      tags: [Data]
       security:
         - bearerAuth: []
-      summary: Return entries of stock searched by symbol, optionally filtered by date.
       tags: [Queries]
       parameters:
         - in: path
