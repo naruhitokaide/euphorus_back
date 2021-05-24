@@ -1,5 +1,6 @@
 const express = require("express");
 const router = express.Router();
+const auth = require("../middleware/authorize");
 
 router.get("/", function (req, res, next) {
   res.render("index", { title: "The World Happiness API" });
@@ -8,6 +9,36 @@ router.get("/", function (req, res, next) {
 router.get("/rankings/:year?", function (req, res, next) {
   let yearParam = req.query.year;
   let countryParam = req.query.country;
+
+  // Check if year parameter is in fomat YYYY
+  if (yearParam && yearParam.length !== 4) {
+    res.status(400).json({
+      error: true,
+      message: "Invalid year format. Format must be YYYY.",
+    });
+    return;
+  }
+
+  // Check if country parameter contains numbers
+  if (countryParam && /\d/.test(countryParam)) {
+    res.status(400).json({
+      error: true,
+      message: "Invalid country format. Country query cannot contain numbers.",
+    });
+    return;
+  }
+
+  // Check for invalid query parameters
+  for (let param in req.query) {
+    if (param !== "country" && param !== "year") {
+      res.status(400).json({
+        error: true,
+        message:
+          "Invalid query parameters. Only year and country are permitted.",
+      });
+      return;
+    }
+  }
 
   const query = req.db
     .from("rankings")
@@ -27,7 +58,6 @@ router.get("/rankings/:year?", function (req, res, next) {
       res.json({ Error: false, Message: "Success", Rankings: rows });
     })
     .catch((err) => {
-      console.log(err);
       res.json({ Error: true, Message: "Error in  MySQL query" });
     });
 });
@@ -44,12 +74,11 @@ router.get("/countries", function (req, res, next) {
       res.json({ Error: false, Message: "Success", Rankings: rows });
     })
     .catch((err) => {
-      console.log(err);
       res.json({ Error: true, Message: "Error in  MySQL query" });
     });
 });
 
-router.get("/factors/:year", function (req, res, next) {
+router.get("/factors/:year", auth.authorize, function (req, res, next) {
   let limitParam = req.query.limit;
   let countryParam = req.query.country;
 
@@ -63,7 +92,7 @@ router.get("/factors/:year", function (req, res, next) {
   }
 
   if (countryParam) {
-    query.where("country", "like", `${countryParam}`)
+    query.where("country", "like", `${countryParam}`);
   }
 
   query

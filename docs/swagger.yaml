@@ -1,0 +1,366 @@
+openapi: 3.0.0
+info:
+  title: World Hapsdsdpiness Rankings
+  description: This API has been created to support the assessment in QUT's CAB230 Web Computing unit. It exposes a small number of REST endpoints which implement CRUD operations on a database containing publicly available data from the World Happiness Report (https://en.wikipedia.org/wiki/World_Happiness_Report) - an annual survey that ranks the overall happiness of a country according to the views of its citizens on a range of happiness measures. This API provides access to the survey data for the years 2015 to 2020 (inclusive). The API endpoints and their usage are described in detail below.
+
+  version: 1.0.0
+
+components:
+  securitySchemes:
+    bearerAuth:            
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+paths:
+  /rankings:
+    get:
+      tags: [Data]
+      description: Returns a list of countries and their happiness rank for the years 2015 to 2020. The list is arranged by year, in descending order. The list can optionally be filtered by year and/or country name using query parameters.
+      parameters:
+        - in: query
+          name: year
+          required: false
+          description: Year of world happiness report
+        - in: query
+          name: country
+          required: false
+          description: Name of country
+           
+      responses:
+        "200":
+          description: A JSON array of stock listing objects comprising name, symbol and industry sector
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    name:
+                      type: string
+                      example: Agilent Technologies Inc
+                    symbol:
+                      type: string
+                      example: A
+                    industry:
+                      type: string
+                      example: Health Care
+        "400":
+          description: Invalid query parameter
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: Invalid query parameter: only 'industry' is permitted
+        "404":
+          description: Industry sector not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: Industry sector not found
+  /stocks/{symbol}:
+    get:
+      summary: Returns the latest entry for a particular stock searched by symbol (1-5 upper case letters).  
+      tags: [Queries]
+      parameters:
+        - in: path
+          name: symbol
+          required: true
+          description: The exchange symbol of the stock
+          schema:
+            type: string
+            example: AAL
+      responses:
+        "200":
+          description: A stock object 
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  timestamp:
+                    type: string
+                    example: 2020-03-22T14:00:00.000Z
+                  symbol:
+                    type: string
+                    example: AAL
+                  name:
+                    type: string
+                    example: American Airlines Group
+                  industry:
+                    type: string
+                    example: Industrials
+                  open:
+                    type: number
+                    example: 10.9
+                  high:
+                    type: number
+                    example: 11.36
+                  low:
+                    type: number
+                    example: 10.01
+                  close:
+                    type: number
+                    example: 10.25
+                  volumes:
+                    type: number
+                    example: 55491000
+        "400":
+          description: Invalid query parameter(s)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: Date parameters only available on authenticated route /stocks/authed
+        "404":
+          description: No entry for the symbol found in the stocks database.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: No entry for symbol in stocks database
+  /stocks/authed/{symbol}:
+    get:
+      security:
+        - bearerAuth: []
+      summary: Return entries of stock searched by symbol, optionally filtered by date.
+      tags: [Queries]
+      parameters:
+        - in: path
+          name: symbol
+          required: true
+          description: The exchange symbol of the stock
+          schema:
+            type: string
+            example: AAL
+        - in: query
+          name: from
+          description: Starting date of entries. Needs to be a string parsable for Date.Parse()
+          schema:
+            type: string
+            example: 2020-03-15
+        - in: query
+          name: to
+          description: Finishing date of entries. Needs to be a string parsable for Date.Parse()
+          schema:
+            type: string
+            example: 2020-03-20
+      responses:
+        "200":
+          description: One or more stock entries that meet the search criteria. By default, the response will be a single object. It at least one valid to or from query is supplied with a valid date then the response will be an array of stock objects. 
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  timestamp:
+                    type: string
+                    example: 2020-03-22T14:00:00.000Z
+                  symbol:
+                    type: string
+                    example: AAL
+                  name:
+                    type: string
+                    example: American Airlines Group
+                  industry:
+                    type: string
+                    example: Industrials
+                  open:
+                    type: number
+                    example: 10.9
+                  high:
+                    type: number
+                    example: 11.36
+                  low:
+                    type: number
+                    example: 10.01
+                  close:
+                    type: number
+                    example: 10.25
+                  volumes:
+                    type: number
+                    example: 55491000
+        "400":
+          description: Invalid query parameter or date format
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: Parameters allowed are 'from' and 'to', example: /stocks/authed/AAL?from=2020-03-15
+        "403":
+          description: Access denied
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: Authorization header not found
+        "404":
+          description: Queried data not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: No entries available for query symbol for supplied date range
+  /user/register:
+    post:
+      summary: Create a new user account
+      tags: [Users]
+      requestBody:
+        description: User object to be registered
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  example: example@api.com
+                password:
+                  type: string
+                  example: asdlkfj1
+      responses:
+        "201":
+          description: User created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: User created
+        "400":
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: Request body incomplete - email and password needed
+        "409":
+          description: User already exists
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: User already exists!
+  /user/login:
+    post:
+      summary: Log in to existing account
+      tags: [Users]
+      requestBody:
+        description: User object used to log in
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  example: example@api.com
+                password:
+                  type: string
+                  example: asdlkfj1
+      responses:
+        "200":
+          description: Log in successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token:
+                    type: string
+                    example: afakejsonwebtoken
+                  token_type:
+                    type: string
+                    example: Bearer
+                  expires:
+                    type: number
+                    example: 86400
+        "401":
+          description: Log in failed
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: Incorrect email or password
+        "400":
+          description: Invalid log in request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: Request body invalid - email and password are required

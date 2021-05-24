@@ -7,6 +7,10 @@ const helmet = require("helmet");
 const cors = require("cors");
 require("dotenv").config();
 
+const swaggerUI = require("swagger-ui-express");
+const yaml = require("yamljs");
+const swaggerDocument = yaml.load("./docs/swagger.yaml");
+
 const indexRouter = require("./routes/index");
 const usersRouter = require("./routes/users");
 
@@ -42,6 +46,7 @@ app.use((req, res, next) => {
 
 app.use("/", indexRouter);
 app.use("/user", usersRouter);
+app.use("/docs", swaggerUI.serve, swaggerUI.setup(swaggerDocument));
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
