@@ -1,35 +1,209 @@
-openapi: 3.0.0
+openapi: 3.0.3
 info:
-  title: World Happiness Rankings
-  description: This API has been created to support the assessment in QUT's CAB230 Web Computing unit. It exposes a small number of REST endpoints which implement CRUD operations on a database containing publicly available data from the World Happiness Report (https://en.wikipedia.org/wiki/World_Happiness_Report) - an annual survey that ranks the overall happiness of a country according to the views of its citizens on a range of happiness measures. This API provides access to the survey data for the years 2015 to 2020 (inclusive). The API endpoints and their usage are described in detail below.
-
   version: 1.0.0
-
+  title: World Happiness Rankings
+  description: >-
+    This API has been created to support the assessment in QUT's CAB230 Web
+    Computing unit. It exposes a small number of REST endpoints which implement
+    CRUD operations on a database containing publicly available data from the
+    World Happiness Report (<a
+    href="https://en.wikipedia.org/wiki/World_Happiness_Report"
+    target="_blank">https://en.wikipedia.org/wiki/World_Happiness_Report</a>) -
+    an annual survey that ranks the overall happiness of a country according to
+    the views of its citizens on a range of happiness measures. This API
+    provides access to the survey data for the years 2015 to 2020 (inclusive).
+    The API endpoints and their usage are described in detail below.
 components:
   securitySchemes:
-    bearerAuth:            
+    bearerAuth:
       type: http
       scheme: bearer
-      bearerFormat: JWT
-
+      description: Enter JWT Bearer token **_only_**
+      name: Authorization
+      in: header
+  schemas:
+    InvalidProfileBodyFormat:
+      type: object
+      properties:
+        error:
+          type: boolean
+          example: "true"
+        message:
+          type: string
+          example: >-
+            Request body incomplete: firstName, lastName, dob and address are
+            required.
+    InvalidFirstNameLastNameAddressFormat:
+      type: object
+      properties:
+        error:
+          type: boolean
+          example: "true"
+        message:
+          type: string
+          example: >-
+            Request body invalid, firstName, lastName and address must be
+            strings only.
+    InvalidProfileDateFormat:
+      type: object
+      properties:
+        error:
+          type: boolean
+          example: "true"
+        message:
+          type: string
+          example: "Invalid input: dob must be a real date in format YYYY-MM-DD."
+    InvalidProfileDate:
+      type: object
+      properties:
+        error:
+          type: boolean
+          example: "true"
+        message:
+          type: string
+          example: "Invalid input: dob must be a date in the past."
+    InvalidCountryFormat:
+      type: object
+      properties:
+        error:
+          type: boolean
+          example: "true"
+        message:
+          type: string
+          example: >-
+            Invalid country format. Country query parameter cannot contain
+            numbers.
+    InvalidYearFormat:
+      type: object
+      properties:
+        error:
+          type: boolean
+          example: "true"
+        message:
+          type: string
+          example: Invalid year format. Format must be yyyy.
+    InvalidParametersRankings:
+      type: object
+      properties:
+        error:
+          type: boolean
+          example: "true"
+        message:
+          type: string
+          example: Invalid query parameters. Only year and country are permitted.
+    InvalidParametersFactors:
+      type: object
+      properties:
+        error:
+          type: boolean
+          example: "true"
+        message:
+          type: string
+          example: Invalid query parameters. Only limit and country are permitted.
+    InvalidLimitFormat:
+      type: object
+      properties:
+        error:
+          type: boolean
+          example: "true"
+        message:
+          type: string
+          example: Invalid limit query. Limit must be a positive number.
+    MissingAuthHeader:
+      type: object
+      properties:
+        error:
+          type: boolean
+          example: "true"
+        message:
+          type: string
+          example: Authorization header ('Bearer token') not found
+    TokenExpired:
+      type: object
+      properties:
+        error:
+          type: boolean
+          example: "true"
+        message:
+          type: string
+          example: JWT token has expired
+    InvalidJWT:
+      type: object
+      properties:
+        error:
+          type: boolean
+          example: "true"
+        message:
+          type: string
+          example: Invalid JWT token
+    MalformedAuthHeader:
+      type: object
+      properties:
+        error:
+          type: boolean
+          example: "true"
+        message:
+          type: string
+          example: Authorization header is malformed
+    PublicProfile:
+      type: object
+      properties:
+        email:
+          type: string
+          example: mike@gmail.com
+        firstName:
+          type: string
+          example: Michael
+        lastName:
+          type: string
+          example: Jordan
+    AuthenticatedProfile:
+      type: object
+      properties:
+        email:
+          type: string
+          example: mike@gmail.com
+        firstName:
+          type: string
+          example: Michael
+        lastName:
+          type: string
+          example: Jordan
+        dob:
+          type: string
+          example: "1963-02-17"
+        address:
+          type: string
+          example: "123 Fake Street, Springfield"
+produces:
+  - application/json
 paths:
   /rankings:
     get:
-      tags: [Data]
-      description: Returns a list of countries and their happiness rank for the years 2015 to 2020. The list is arranged by year, in descending order. The list can optionally be filtered by year and/or country name using query parameters.
+      tags:
+        - Data
+      description: >-
+        Returns a list of countries and their happiness rank for the years 2015
+        to 2020. The list is arranged by year, in descending order. The list can
+        optionally be filtered by year and/or country name using query
+        parameters.
       parameters:
-        - in: query
-          name: year
-          required: false
+        - name: year
+          in: query
           description: Year of world happiness report
-        - in: query
-          name: country
           required: false
+          type: number
+        - name: country
+          in: query
           description: Name of country
-           
+          required: false
+          type: string
       responses:
         "200":
-          description: A JSON array of stock listing objects comprising name, symbol and industry sector
+          description: >-
+            An array of objects containing happiness rank, country, score and
+            year properties. An example of one object in the array is shown
+            below.
           content:
             application/json:
               schema:
@@ -37,48 +211,39 @@ paths:
                 items:
                   type: object
                   properties:
-                    name:
+                    rank:
+                      type: number
+                      example: "1"
+                    country:
                       type: string
-                      example: Agilent Technologies Inc
-                    symbol:
-                      type: string
-                      example: A
-                    industry:
-                      type: string
-                      example: Health Care
+                      example: Finland
+                    score:
+                      type: number
+                      example: "7.769"
+                    year:
+                      type: number
+                      example: "2019"
         "400":
-          description: Invalid query parameter
+          description: >-
+            Invalid country or year query parameters. Click on 'Schema' below to
+            see the possible error responses.
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  error:
-                    type: boolean
-                    example: true
-                  message:
-                    type: string
-                    example: Invalid query parameter: only 'industry' is permitted
-        "404":
-          description: Industry sector not found
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  error:
-                    type: boolean
-                    example: true
-                  message:
-                    type: string
-                    example: Industry sector not found
+                oneOf:
+                  - $ref: "#/components/schemas/InvalidCountryFormat"
+                  - $ref: "#/components/schemas/InvalidYearFormat"
+                  - $ref: "#/components/schemas/InvalidParametersRankings"
   /countries:
     get:
-      tags: [Data]
-      description:  Returns a list of all surveyed countries, ordered alphabetically.
+      tags:
+        - Data
+      description: "Returns a list of all surveyed countries, ordered alphabetically."
       responses:
         "200":
-          description: An array of countries. An example of the first five elements in the array is shown below.
+          description: >-
+            An array of countries. An example of the first five elements in the
+            array is shown below.
           content:
             application/json:
               schema:
@@ -91,10 +256,8 @@ paths:
                   - Algeria
                   - Angola
                   - Argentina
-
-               
         "400":
-          description: Invalid query parameter(s)
+          description: Invalid query parameters.
           content:
             application/json:
               schema:
@@ -102,94 +265,120 @@ paths:
                 properties:
                   error:
                     type: boolean
-                    example: true
+                    example: "true"
                   message:
                     type: string
-                    example: Invalid query parameters. Query parameters are not permitted.
-  /factors/{year}:
+                    example: >-
+                      Invalid query parameters. Query parameters are not
+                      permitted.
+  "/factors/{year}":
     get:
-      tags: [Data]
-      description: Returns a list of countries and their associated happiness factor scores for the specified year. The path parameter (year) is required. The number of returned results can be limited by the optional limit query parameter. A result for a single country can be obtained via the optional country query parameter. This route also requires the user to be authenticated - a valid JWT token must be sent in the header of the request. To test this route using Swagger, click the green 'Authorize' button at the top of this page to enter your JWT token. A JWT token can be obtained by logging in.
+      tags:
+        - Data
+      description: >-
+        Returns a list of countries and their associated happiness factor scores
+        for the specified year. The path parameter (year) is required. The
+        number of returned results can be limited by the optional limit query
+        parameter. A result for a single country can be obtained via the
+        optional country query parameter. This route also requires the user to
+        be authenticated - a valid JWT token must be sent in the header of the
+        request. To test this route using Swagger, click the green 'Authorize'
+        button at the top of this page to enter your JWT token. A JWT token can
+        be obtained by logging in.
+      parameters:
+        - name: year
+          in: path
+          description: Year of world happiness report
+          required: true
+          schema:
+            type: number
+        - name: limit
+          in: query
+          description: The maximum number of results to return
+          schema:
+            type: number
+        - name: country
+          in: query
+          description: Name of country
+          schema:
+            type: string
       security:
         - bearerAuth: []
-      parameters:
-        - in: path
-          name: year
-          required: true
-          description: Year of world happiness report
-        - in: query
-          name: limit
-          description: The maximum number of results to return
-        - in: query
-          name: country
-          description: Name of country
       responses:
         "200":
-          description: An array of objects containing happiness rank, country, score, economy, family, health, freedom, generosity and trust properties. An example of one object in the array is shown below. 
+          description: >-
+            An array of objects containing happiness rank, country, score,
+            economy, family, health, freedom, generosity and trust properties.
+            An example of one object in the array is shown below.
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  rank:
-                    type: number
-                    example: 1
-                  country:
-                    type: string
-                    example: Finland
-                  score:
-                    type: string
-                    example: 7.769
-                  economy:
-                    type: string
-                    example: 1.340
-                  family:
-                    type: string
-                    example: 1.587
-                  health:
-                    type: string
-                    example: 1.340
-                  freedom:
-                    type: string
-                    example: 0.596
-                  generosity:
-                    type: string
-                    example: 0.153
-                  trust:
-                    type: string
-                    example: 0.393
+                type: array
+                items:
+                  type: object
+                  properties:
+                    rank:
+                      type: number
+                      example: "1"
+                    country:
+                      type: string
+                      example: Finland
+                    score:
+                      type: string
+                      example: "7.769"
+                    economy:
+                      type: string
+                      example: "1.340"
+                    family:
+                      type: string
+                      example: "1.587"
+                    health:
+                      type: string
+                      example: "1.340"
+                    freedom:
+                      type: string
+                      example: "0.596"
+                    generosity:
+                      type: string
+                      example: "0.153"
+                    trust:
+                      type: string
+                      example: "0.393"
         "400":
-          description: Invalid parameters. Click on 'Schema' below to see the possible error responses.
+          description: >-
+            Invalid parameters. Click on 'Schema' below to see the possible
+            error responses.
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  error:
-                    type: boolean
-                    example: true
-                  message:
-                    type: string
-                    example: Invalid year format. Format must be yyyy.
+                oneOf:
+                  - $ref: "#/components/schemas/InvalidYearFormat"
+                  - $ref: "#/components/schemas/InvalidParametersFactors"
+                  - $ref: "#/components/schemas/InvalidLimitFormat"
+                  - $ref: "#/components/schemas/InvalidCountryFormat"
         "401":
-          description: Unauthorized. Click on 'Schema' below to see the possible error responses.
+          description: >-
+            Unauthorized. Click on 'Schema' below to see the possible error
+            responses.
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  error:
-                    type: boolean
-                    example: true
-                  message:
-                    type: string
-                    example: Authorization header ('Bearer token') not found
+                oneOf:
+                  - $ref: "#/components/schemas/MissingAuthHeader"
+                  - $ref: "#/components/schemas/TokenExpired"
+                  - $ref: "#/components/schemas/InvalidJWT"
+                  - $ref: "#/components/schemas/MalformedAuthHeader"
   /user/register:
     post:
-      tags: [Authentication]
-      description: Creates a new user account. A request body containing the user to be registered must be sent.
+      tags:
+        - Authentication
+      description: >-
+        Creates a new user account. A request body containing the user to be
+        registered must be sent.
       requestBody:
-        description: User object to be registered
+        description: >-
+          An object containing the email and password of the user to be
+          registered.
         required: true
         content:
           application/json:
@@ -201,7 +390,7 @@ paths:
                   example: mike@gmail.com
                 password:
                   type: string
-                  example: asdlkfj1
+                  example: password
       responses:
         "201":
           description: User successfully created
@@ -222,10 +411,12 @@ paths:
                 properties:
                   error:
                     type: boolean
-                    example: true
+                    example: "true"
                   message:
                     type: string
-                    example: Request body incomplete, both email and password are required
+                    example: >-
+                      Request body incomplete, both email and password are
+                      required
         "409":
           description: User already exists
           content:
@@ -235,16 +426,19 @@ paths:
                 properties:
                   error:
                     type: boolean
-                    example: true
+                    example: "true"
                   message:
                     type: string
                     example: User already exists
   /user/login:
     post:
-      tags: [Authentication]
-      description: Log in to an existing user account. A request body containing the user credentials must be sent.
+      description: >-
+        Log in to an existing user account. A request body containing the user
+        credentials must be sent.
+      tags:
+        - Authentication
       requestBody:
-        description: User object used to log in
+        description: The credentials of the user to log in.
         required: true
         content:
           application/json:
@@ -253,10 +447,10 @@ paths:
               properties:
                 email:
                   type: string
-                  example: example@api.com
+                  example: mike@gmail.com
                 password:
                   type: string
-                  example: asdlkfj1
+                  example: password
       responses:
         "200":
           description: Log in successful
@@ -267,26 +461,13 @@ paths:
                 properties:
                   token:
                     type: string
-                    example: afakejsonwebtoken
+                    example: ajsonwebtoken
                   token_type:
                     type: string
                     example: Bearer
-                  expires:
+                  expires_in:
                     type: number
                     example: 86400
-        "401":
-          description: Log in failed
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  error:
-                    type: boolean
-                    example: true
-                  message:
-                    type: string
-                    example: Incorrect email or password
         "400":
           description: Invalid log in request
           content:
@@ -296,46 +477,14 @@ paths:
                 properties:
                   error:
                     type: boolean
-                    example: true
+                    example: "true"
                   message:
                     type: string
-                    example: Request body invalid - email and password are required
-  /user/{email}/profile:
-    get:
-      tags: [Profile]
-      description: Returns an object containing a user's profile information. The path parameter (email) is required and must be an email that has been registered. This route returns additional information if the user is authenticated. To be authenticated, a valid JWT token must be sent in the header of the request. To test this using Swagger, click the green 'Authorize' button at the top of this page to enter your JWT token. A JWT token can be obtained by logging in.
-      security:
-      - bearerAuth: []
-      parameters:
-        - in: path
-          name: year
-          required: true
-          description: Email address of a registerd user
-      responses:
-        "200":
-          description: An object containing email, firstName, lastName, address (authenticated only) and dob (authenticated only) properties. An example object for an authenticated request is shown below. If no profile information has been entered for the user via the profile PUT request route, all returned values except email are expected to be null. Click on 'Schema' below to see a response example for an unauthenticated request.
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  email:
-                    type: string
-                    example: mike@gmail.com
-                  firstName:
-                    type: string
-                    example: Michael
-                  lastName:
-                    type: string
-                    example: Jordan
-                  dob:
-                    type: string
-                    example: "1963-02-17"
-                  address:
-                    type: string
-                    example: "123 Fake Street, Springfield"
+                    example: >-
+                      Request body incomplete, both email and password are
+                      required
         "401":
-          description: Unauthorized. Click on 'Schema' below to see the possible error responses.
+          description: Log in failed
           content:
             application/json:
               schema:
@@ -343,10 +492,40 @@ paths:
                 properties:
                   error:
                     type: boolean
-                    example: true
+                    example: "true"
                   message:
                     type: string
-                    example: JWT token has expired
+                    example: Incorrect email or password
+  /user/{email}/profile:
+    get:
+      description: >-
+        Returns an object containing a user's profile information. The path parameter (email) is required and must be an email that has been registered. This route returns additional information if the user is authenticated. To be authenticated, a valid JWT token must be sent in the header of the request. To test this using Swagger, click the green 'Authorize' button at the top of this page to enter your JWT token. A JWT token can be obtained by logging in.
+      tags:
+        - Profile
+      parameters:
+        - name: email
+          in: query
+          description: Email address of a registered user
+          required: true
+          type: string
+      responses:
+        "200":
+          description: An object containing email, firstName, lastName, address (authenticated only) and dob (authenticated only) properties. An example object for an authenticated request is shown below. If no profile information has been entered for the user via the profile PUT request route, all returned values except email are expected to be null. Click on 'Schema' below to see a response example for an unauthenticated request.
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: "#/components/schemas/AuthenticatedProfile"
+                  - $ref: "#/components/schemas/PublicProfile"
+        "401":
+          description: Unauthorized. Click on 'Schema' below to see the possible error responses.
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: "#/components/schemas/TokenExpired"
+                  - $ref: "#/components/schemas/InvalidJWT"
+                  - $ref: "#/components/schemas/MalformedAuthHeader"
         "404":
           description: User not found
           content:
@@ -356,56 +535,8 @@ paths:
                 properties:
                   error:
                     type: boolean
-                    example: true
+                    example: "true"
                   message:
                     type: string
-                    example: User not found
-  /user/{email}/profile:
-    put:
-      tags: [Profile]
-      description: Updates a user's profile information. The path parameter (email) is required and must be an email that has been registered. A request body containing the user's profile information must be sent. This route returns an object containing the user's updated profile information. This route also requires the user to be authenticated - a valid JWT token must be sent in the header of the request. To test this route using Swagger, click the green 'Authorize' button at the top of this page to enter your JWT token. A JWT token can be obtained by logging in.
-      security:
-      - bearerAuth: []
-      parameters:
-        - in: path
-          name: year
-          required: true
-          description: Email address of a registerd user
-      responses:
-        "200":
-          description: An object containing email, firstName, lastName, address (authenticated only) and dob (authenticated only) properties. An example object for an authenticated request is shown below. If no profile information has been entered for the user via the profile PUT request route, all returned values except email are expected to be null. Click on 'Schema' below to see a response example for an unauthenticated request.
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  email:
-                    type: string
-                    example: mike@gmail.com
-                  firstName:
-                    type: string
-                    example: Michael
-                  lastName:
-                    type: string
-                    example: Jordan
-                  dob:
-                    type: string
-                    example: "1963-02-17"
-                  address:
-                    type: string
-                    example: "123 Fake Street, Springfield"
-        "401":
-          description: Unauthorized. Click on 'Schema' below to see the possible error responses.
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  error:
-                    type: boolean
-                    example: true
-                  message:
-                    type: string
-                    example: JWT token has expired
-                
-  
+                    example: >-
+                      User not found

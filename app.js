@@ -10,6 +10,7 @@ require("dotenv").config();
 const swaggerUI = require("swagger-ui-express");
 const yaml = require("yamljs");
 const swaggerDocument = yaml.load("./docs/swagger.yaml");
+// const swaggerDocument = require("./docs/swagger.json");
 
 const indexRouter = require("./routes/index");
 const usersRouter = require("./routes/users");
