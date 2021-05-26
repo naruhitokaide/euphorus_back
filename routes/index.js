@@ -54,8 +54,8 @@ router.get("/rankings/:year?", function (req, res, next) {
   }
 
   query
-    .then((rows) => {
-      res.json({ Error: false, Message: "Success", Rankings: rows });
+    .then((rankings) => {
+      res.json(rankings);
     })
     .catch((err) => {
       res.json({ Error: true, Message: "Error in  MySQL query" });
@@ -71,7 +71,8 @@ router.get("/countries", function (req, res, next) {
 
   query
     .then((rows) => {
-      res.json({ Error: false, Message: "Success", Rankings: rows });
+      let countryArray = rows.map((element) => element.country);
+      res.json(countryArray);
     })
     .catch((err) => {
       res.json({ Error: true, Message: "Error in  MySQL query" });
@@ -84,7 +85,17 @@ router.get("/factors/:year", auth.authorize, function (req, res, next) {
 
   const query = req.db
     .from("rankings")
-    .select("*")
+    .select(
+      "rank",
+      "country",
+      "score",
+      "economy",
+      "family",
+      "health",
+      "freedom",
+      "generosity",
+      "trust"
+    )
     .where("year", "=", req.params.year);
 
   if (limitParam) {
@@ -96,8 +107,8 @@ router.get("/factors/:year", auth.authorize, function (req, res, next) {
   }
 
   query
-    .then((rows) => {
-      res.json({ Error: false, Message: "Success", Rankings: rows });
+    .then((factors) => {
+      res.json(factors);
     })
     .catch((err) => {
       console.log(err);

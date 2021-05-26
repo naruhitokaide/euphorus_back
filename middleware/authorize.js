@@ -24,7 +24,7 @@ module.exports.authorize = (req, res, next) => {
     module.exports.CURRENT_USER = decoded.email;
 
     if (decoded.exp < Date.now()) {
-      res.status(403).json({ error: true, message: "Token has expired" });
+      res.status(401).json({ error: true, message: "JWT token has expired" });
       return;
     }
     // Permit user to advance to route

@@ -93,7 +93,37 @@ router.post("/login", function (req, res, next) {
     });
 });
 
-router.get("/:email/profile", function (req, res, next) {});
+router.get("/:email/profile", auth.authorize, function (req, res, next) {
+  // 1. Retrive path parameter
+  const email = req.params.email;
+
+  // 2. Standard output if user requests another users profile
+  let query = req.db
+    .from("users")
+    .select("email", "firstName", "lastName")
+    .where("email", "=", email);
+
+  // 3. If user logged in request their own profile,
+  // they also get dob and address
+  if (auth.CURRENT_USER === req.params.email) {
+    query = req.db
+      .from("users")
+      .select("email", "firstName", "lastName", "dob", "address")
+      .where("email", "=", email);
+  }
+
+  query
+    .then((data) => {
+      if (data.length === 0) {
+        res.status(404).json({ error: true, message: "User not found" });
+        return;
+      }
+      res.json(data[0]);
+    })
+    .catch((err) => {
+      res.json({ Error: true, Message: "Error in  MySQL query" });
+    });
+});
 
 router.put("/:email/profile", auth.authorize, function (req, res, next) {
   // 1. Retrieve fields from body
