@@ -1,5 +1,6 @@
 const jwt = require("jsonwebtoken");
 module.exports.SECRET_KEY = "secret key";
+module.exports.CURRENT_USER = "";
 
 module.exports.authorize = (req, res, next) => {
   const authorization = req.headers.authorization;
@@ -9,15 +10,18 @@ module.exports.authorize = (req, res, next) => {
   if (authorization && authorization.split(" ").length === 2) {
     token = authorization.split(" ")[1];
   } else {
-    res
-      .status(403)
-      .json({ error: true, message: "Authorization header not found" });
+    res.status(401).json({
+      error: true,
+      message: "Authorization header ('Bearer token') not found",
+    });
     return;
   }
 
   // Verify JWT and check expiration date
   try {
     const decoded = jwt.verify(token, module.exports.SECRET_KEY);
+
+    module.exports.CURRENT_USER = decoded.email;
 
     if (decoded.exp < Date.now()) {
       res.status(403).json({ error: true, message: "Token has expired" });

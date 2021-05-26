@@ -2,7 +2,7 @@ const express = require("express");
 const router = express.Router();
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
-const authorize = require("../middleware/authorize");
+const auth = require("../middleware/authorize");
 
 router.post("/register", function (req, res, next) {
   // 1. Retrieve email and password from req.body
@@ -34,7 +34,14 @@ router.post("/register", function (req, res, next) {
       // 4. If user does not exist, insert into table
       const saltRounds = 10;
       const password_hash = bcrypt.hashSync(password, saltRounds);
-      return req.db.from("users").insert({ email, password_hash });
+      return req.db.from("users").insert({
+        email: email,
+        firstName: null,
+        lastName: null,
+        dob: null,
+        address: null,
+        password_hash: password_hash,
+      });
     })
     .then(() => {
       res.status(201).json({ success: true, message: "User created" });
@@ -77,16 +84,58 @@ router.post("/login", function (req, res, next) {
           .json({ error: true, message: "Incorrect email or password" });
         return;
       }
-      const secretKey = authorize.SECRET_KEY;
+      const secretKey = auth.SECRET_KEY;
       const expires_in = 60 * 60 * 24; // 1 Day
       const exp = Date.now() + expires_in * 1000;
       const token = jwt.sign({ email, exp }, secretKey);
       res.json({ token_type: "Bearer", token, expires_in });
+      currentUserEmail = email;
     });
 });
 
 router.get("/:email/profile", function (req, res, next) {});
 
-router.put("/:email/profile", function (req, res, next) {});
+router.put("/:email/profile", auth.authorize, function (req, res, next) {
+  // 1. Retrieve fields from body
+  const firstName = req.body.firstName;
+  const lastName = req.body.lastName;
+  const dob = req.body.dob;
+  const address = req.body.address;
+
+  // 2. Verify body
+  if (!firstName || !lastName || !dob || !address) {
+    res.status(400).json({
+      error: true,
+      message:
+        "Request body incomplete: firstName, lastName, dob and address are required.",
+    });
+    return;
+  }
+
+  // 3. Check that user is only updating their own information
+  if (auth.CURRENT_USER !== req.params.email) {
+    res.status(403).json({
+      error: true,
+      message: "Forbidden",
+    });
+    return;
+  }
+
+  const updateQuery = req.db
+    .from("users")
+    .update({
+      firstName: firstName,
+      lastName: lastName,
+      dob: dob,
+      address: address,
+    })
+    .where("email", "=", req.params.email);
+
+  updateQuery.then(() => {
+    res
+      .status(200)
+      .json({ success: true, message: "Profile information updated" });
+  });
+});
 
 module.exports = router;
