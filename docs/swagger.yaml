@@ -561,8 +561,20 @@ paths:
         content:
           application/json:
             schema:
-              oneOf:
-                - $ref: "#/components/schemas/AuthenticatedProfile"
+              type: object
+              properties:
+                firstName:
+                  type: string
+                  example: Michael
+                lastName:
+                  type: string
+                  example: Jordan
+                dob:
+                  type: string
+                  example: 1963-02-17
+                address:
+                  type: string
+                  example: 123 Fake Street, Springfield
 
       responses:
         "200":
@@ -578,11 +590,22 @@ paths:
             application/json:
               schema:
                 oneOf:
+                  - $ref: "#/components/schemas/InvalidProfileBodyFormat"
+                  - $ref: "#/components/schemas/InvalidFirstNameLastNameAddressFormat"
+                  - $ref: "#/components/schemas/InvalidProfileDateFormat"
+                  - $ref: "#/components/schemas/InvalidProfileDate"
+        "401":
+          description: Unauthorized. Click on 'Schema' below to see the possible error responses.
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: "#/components/schemas/MissingAuthHeader"
                   - $ref: "#/components/schemas/TokenExpired"
                   - $ref: "#/components/schemas/InvalidJWT"
                   - $ref: "#/components/schemas/MalformedAuthHeader"
-        "404":
-          description: User not found
+        "403":
+          description: Forbidden. Email address associated with JWT token is not the same as email provided in path parameter.
           content:
             application/json:
               schema:
@@ -590,8 +613,7 @@ paths:
                 properties:
                   error:
                     type: boolean
-                    example: "true"
+                    example: true
                   message:
                     type: string
-                    example: >-
-                      User not found
+                    example: "Forbidden"
