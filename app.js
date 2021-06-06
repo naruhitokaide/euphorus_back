@@ -10,9 +10,11 @@ require("dotenv").config();
 const swaggerUI = require("swagger-ui-express");
 const yaml = require("yamljs");
 const swaggerDocument = yaml.load("./docs/swagger.yaml");
-// const swaggerDocument = require("./docs/swagger.json");
 
 const indexRouter = require("./routes/index");
+const rankingsRouter = require("./routes/rankings");
+const countriesRouter = require("./routes/countries");
+const factorsRouter = require("./routes/factors");
 const usersRouter = require("./routes/users");
 
 const app = express();
@@ -46,8 +48,10 @@ app.use((req, res, next) => {
 });
 
 app.use("/", indexRouter);
+app.use("/rankings", rankingsRouter);
+app.use("/countries", countriesRouter);
+app.use("/factors", factorsRouter);
 app.use("/user", usersRouter);
-app.use("/docs", swaggerUI.serve, swaggerUI.setup(swaggerDocument));
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {

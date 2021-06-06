@@ -27,9 +27,10 @@ module.exports.authorize = (req, res, next) => {
       res.status(401).json({ error: true, message: "JWT token has expired" });
       return;
     }
+
     // Permit user to advance to route
     next();
   } catch (e) {
-    res.status(403).json({ error: true, message: e.message });
+    res.status(401).json({ error: true, message: "Invalid JWT token" });
   }
 };
