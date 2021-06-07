@@ -93,7 +93,7 @@ router.post("/login", function (req, res, next) {
     });
 });
 
-router.get("/:email/profile", auth.authorize, function (req, res, next) {
+router.get("/:email/profile", function (req, res, next) {
   // 1. Retrive path parameter
   const email = req.params.email;
 

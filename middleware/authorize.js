@@ -7,16 +7,19 @@ module.exports.authorize = (req, res, next) => {
   let token = null;
 
   // Retrieve token
-  if (authorization && authorization.split(" ").length === 2) {
-    token = authorization.split(" ")[1];
-  } else {
-    res.status(401).json({
-      error: true,
-      message: "Authorization header ('Bearer token') not found",
-    });
-    return;
+  if (authorization) {
+    // Check if malformed
+    if (authorization.split(" ")[0] != "Bearer") {
+      res
+        .status(401)
+        .json({ error: true, message: "Authorization header is malformed" });
+      return;
+    }
+    // If not malformed, stored it
+    if (authorization.split(" ").length === 2) {
+      token = authorization.split(" ")[1];
+    }
   }
-
   // Verify JWT and check expiration date
   try {
     const decoded = jwt.verify(token, module.exports.SECRET_KEY);
@@ -28,9 +31,15 @@ module.exports.authorize = (req, res, next) => {
       return;
     }
 
-    // Permit user to advance to route
     next();
   } catch (e) {
-    res.status(401).json({ error: true, message: "Invalid JWT token" });
+    if (e.message === "jwt must be provided") {
+      res.status(401).json({
+        error: true,
+        message: "Authorization header ('Bearer token') not found",
+      });
+    } else {
+      res.status(401).json({ error: true, message: "Invalid JWT token" });
+    }
   }
 };

@@ -39,6 +39,17 @@ router.get("/:year", auth.authorize, function (req, res, next) {
     });
   }
 
+  // Throw error for invalid query parameters
+  for (let param in req.query) {
+    if (param !== "limit" && param !== "country") {
+      res.status(400).json({
+        error: true,
+        message:
+          "Invalid query parameters. Only year and country are permitted.",
+      });
+    }
+  }
+
   const query = req.db
     .from("rankings")
     .select(
