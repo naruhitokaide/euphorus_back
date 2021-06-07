@@ -78,7 +78,6 @@ router.get("/:year", auth.authorize, function (req, res, next) {
       res.json(factors);
     })
     .catch((err) => {
-      console.log(err);
       res.json({ Error: true, Message: "Error in  MySQL query" });
     });
 });

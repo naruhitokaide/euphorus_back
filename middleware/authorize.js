@@ -30,7 +30,6 @@ module.exports.authorize = (req, res, next) => {
       res.status(401).json({ error: true, message: "JWT token has expired" });
       return;
     }
-
     next();
   } catch (e) {
     if (e.message === "jwt must be provided") {

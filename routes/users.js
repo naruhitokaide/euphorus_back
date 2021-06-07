@@ -3,6 +3,7 @@ const router = express.Router();
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const auth = require("../middleware/authorize");
+const moment = require("moment");
 
 router.post("/register", function (req, res, next) {
   // 1. Retrieve email and password from req.body
@@ -105,11 +106,20 @@ router.get("/:email/profile", function (req, res, next) {
 
   // 3. If user logged in request their own profile,
   // they also get dob and address
-  if (auth.CURRENT_USER === req.params.email) {
-    query = req.db
-      .from("users")
-      .select("email", "firstName", "lastName", "dob", "address")
-      .where("email", "=", email);
+
+  if (req.headers.authorization !== undefined) {
+    const authorization = req.headers.authorization;
+    let token = null;
+    if (authorization.split(" ").length === 2) {
+      token = authorization.split(" ")[1];
+    }
+    const decoded = jwt.verify(token, auth.SECRET_KEY);
+    if (decoded.email === req.params.email) {
+      query = req.db
+        .from("users")
+        .select("email", "firstName", "lastName", "dob", "address")
+        .where("email", "=", email);
+    }
   }
 
   query
@@ -142,6 +152,40 @@ router.put("/:email/profile", auth.authorize, function (req, res, next) {
     return;
   }
 
+  if (
+    typeof firstName !== "string" ||
+    typeof lastName !== "string" ||
+    typeof address !== "string"
+  ) {
+    res.status(400).json({
+      error: true,
+      message:
+        "Request body invalid, firstName, lastName and address must be strings only.",
+    });
+    return;
+  }
+  let currentDate = moment();
+  let birthDate = moment(dob);
+
+  // Check format of dob
+  if (!moment(dob, "YYYY-MM-DD", true).isValid()) {
+    console.log(dob);
+    res.status(400).json({
+      error: true,
+      message: "Invalid input: dob must be a real date in format YYYY-MM-DD.",
+    });
+    return;
+  }
+
+  // Check if dob is out of bounds
+  if (birthDate.isAfter(currentDate)) {
+    res.status(400).json({
+      error: true,
+      message: "Invalid input: dob must be a date in the past.",
+    });
+    return;
+  }
+
   // 3. Check that user is only updating their own information
   if (auth.CURRENT_USER !== req.params.email) {
     res.status(403).json({
@@ -161,11 +205,21 @@ router.put("/:email/profile", auth.authorize, function (req, res, next) {
     })
     .where("email", "=", req.params.email);
 
-  updateQuery.then(() => {
-    res
-      .status(200)
-      .json({ success: true, message: "Profile information updated" });
-  });
+  let newProfile = {
+    email: req.params.email,
+    firstName: firstName,
+    lastName: lastName,
+    dob: dob,
+    address: address,
+  };
+
+  updateQuery
+    .then(() => {
+      res.status(200).json(newProfile);
+    })
+    .catch((err) =>
+      res.json({ Error: true, Message: "Error in  MySQL query" })
+    );
 });
 
 module.exports = router;
