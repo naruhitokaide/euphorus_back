@@ -85,7 +85,7 @@ router.post("/login", function (req, res, next) {
           .json({ error: true, message: "Incorrect email or password" });
         return;
       }
-      const secretKey = auth.SECRET_KEY;
+      const secretKey = process.env.SECRET_KEY;
       const expires_in = 60 * 60 * 24; // 1 Day
       const exp = Date.now() + expires_in * 1000;
       const token = jwt.sign({ email, exp }, secretKey);
@@ -113,7 +113,7 @@ router.get("/:email/profile", function (req, res, next) {
     if (authorization.split(" ").length === 2) {
       token = authorization.split(" ")[1];
     }
-    const decoded = jwt.verify(token, auth.SECRET_KEY);
+    const decoded = jwt.verify(token, process.env.SECRET_KEY);
     if (decoded.email === req.params.email) {
       query = req.db
         .from("users")

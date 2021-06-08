@@ -1,5 +1,4 @@
 const jwt = require("jsonwebtoken");
-module.exports.SECRET_KEY = "secret key";
 module.exports.CURRENT_USER = "";
 
 module.exports.authorize = (req, res, next) => {
@@ -22,7 +21,7 @@ module.exports.authorize = (req, res, next) => {
   }
   // Verify JWT and check expiration date
   try {
-    const decoded = jwt.verify(token, module.exports.SECRET_KEY);
+    const decoded = jwt.verify(token, process.env.SECRET_KEY);
 
     module.exports.CURRENT_USER = decoded.email;
 
