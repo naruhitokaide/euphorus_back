@@ -19,6 +19,7 @@ module.exports.authorize = (req, res, next) => {
       token = authorization.split(" ")[1];
     }
   }
+  
   // Verify JWT and check expiration date
   try {
     const decoded = jwt.verify(token, process.env.SECRET_KEY);

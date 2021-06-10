@@ -6,11 +6,10 @@ const auth = require("../middleware/authorize");
 const moment = require("moment");
 
 router.post("/register", function (req, res, next) {
-  // 1. Retrieve email and password from req.body
   const email = req.body.email;
   const password = req.body.password;
 
-  // 2. Check if both email and password are entered
+  // Check if both email and password are entered
   if (!email || !password) {
     res.status(400).json({
       message: `Request body incomplete, both email and password are required`,
@@ -18,7 +17,7 @@ router.post("/register", function (req, res, next) {
     return;
   }
 
-  // 3. Determine if user already exists in table
+  // Determine if user already exists in table
   const queryUsers = req.db
     .from("users")
     .select("*")
@@ -32,7 +31,7 @@ router.post("/register", function (req, res, next) {
         return;
       }
 
-      // 4. If user does not exist, insert into table
+      // If user does not exist, insert into table
       const saltRounds = 10;
       const password_hash = bcrypt.hashSync(password, saltRounds);
       return req.db.from("users").insert({
@@ -50,11 +49,10 @@ router.post("/register", function (req, res, next) {
 });
 
 router.post("/login", function (req, res, next) {
-  // 1. Retrieve email and password from req.body
   const email = req.body.email;
   const password = req.body.password;
 
-  // 2. Verify body
+  // Verify body
   if (!email || !password) {
     res.status(400).json({
       error: true,
@@ -63,7 +61,7 @@ router.post("/login", function (req, res, next) {
     return;
   }
 
-  // 3. Determine if user already exists in table
+  // Determine if user already exists in table
   const queryUsers = req.db
     .from("users")
     .select("*")
@@ -95,18 +93,16 @@ router.post("/login", function (req, res, next) {
 });
 
 router.get("/:email/profile", function (req, res, next) {
-  // 1. Retrive path parameter
   const email = req.params.email;
 
-  // 2. Standard output if user requests another users profile
+  // Standard output if user requests another users profile
   let query = req.db
     .from("users")
     .select("email", "firstName", "lastName")
     .where("email", "=", email);
 
-  // 3. If user logged in request their own profile,
+  // If user logged in requests their own profile,
   // they also get dob and address
-
   if (req.headers.authorization !== undefined) {
     const authorization = req.headers.authorization;
     let token = null;
@@ -136,13 +132,12 @@ router.get("/:email/profile", function (req, res, next) {
 });
 
 router.put("/:email/profile", auth.authorize, function (req, res, next) {
-  // 1. Retrieve fields from body
   const firstName = req.body.firstName;
   const lastName = req.body.lastName;
   const dob = req.body.dob;
   const address = req.body.address;
 
-  // 2. Verify body
+  // Verify body
   if (!firstName || !lastName || !dob || !address) {
     res.status(400).json({
       error: true,
@@ -152,6 +147,7 @@ router.put("/:email/profile", auth.authorize, function (req, res, next) {
     return;
   }
 
+  // Check parameters are correct type
   if (
     typeof firstName !== "string" ||
     typeof lastName !== "string" ||
@@ -186,7 +182,7 @@ router.put("/:email/profile", auth.authorize, function (req, res, next) {
     return;
   }
 
-  // 3. Check that user is only updating their own information
+  // Check that user is only updating their own information
   if (auth.CURRENT_USER !== req.params.email) {
     res.status(403).json({
       error: true,

@@ -39,7 +39,7 @@ logger.token("res", (req, res) => {
   return JSON.stringify(headers);
 });
 
-const options = require("./knexfile.js");
+const options = require("./knexconfig.js");
 const knex = require("knex")(options);
 
 app.use((req, res, next) => {
