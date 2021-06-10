@@ -172,6 +172,8 @@ components:
         dob:
           type: string
           example: "1963-02-17"
+          format: date
+          pattern: "YYYY-MM-DD"
         address:
           type: string
           example: "123 Fake Street, Springfield"

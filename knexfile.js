@@ -1,4 +1,3 @@
-// Update this with details later
 module.exports = {
   client: "mysql2",
   connection: {
@@ -6,5 +5,7 @@ module.exports = {
     database: "happiness",
     user: "root",
     password: "jpc33531",
+    timezone: "UTC",
+    dateStrings: true,
   },
 };
