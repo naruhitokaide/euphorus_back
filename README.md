@@ -13,6 +13,7 @@ This project was the backend for assignment 1 in CAB230 which required us to bui
 
 ## For creating user table
 
+```
 CREATE TABLE IF NOT EXISTS `users` (
   `id` int NOT NULL AUTO_INCREMENT,
   `email` varchar(120) NOT NULL,
@@ -24,3 +25,4 @@ CREATE TABLE IF NOT EXISTS `users` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `email_UNIQUE` (`email`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+```
