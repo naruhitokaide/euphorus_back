@@ -16,11 +16,20 @@ From your command line, first clone this repo:
 
 ```
 # Clone this repository
-$ git clone https://github.com/rgneville/portfolio
+$ git clone https://github.com/ben04rogers/cab230assignment2.git
 
 # Go into the repository
-$ cd portfolio
+$ cd cab230assignment2
+```
 
-# Remove current origin repository
-$ git remote remove origin
+Then you can install the dependencies using NPM or Yarn:
+
+Using NPM: 
+
+```
+# Install dependencies
+$ npm install
+
+# Start express server
+$ npm start
 ```
