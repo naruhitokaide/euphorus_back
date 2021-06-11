@@ -33,7 +33,7 @@ Using NPM:
 $ npm install
 ```
 
-Replace the API KEY in the .env file with your API key. 
+Replace the SECRET_KEY in the .env file with a secret key. 
 
 The data is available from the SQL dump file at https://drive.google.com/drive/u/1/folders/1ZUy0MKcLtuvOQ5b3NQWididxd2jU5Vw- and that will be necessary to create both the rankings, and users tables. These are the following fields on the database:
 
