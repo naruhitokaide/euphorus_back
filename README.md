@@ -37,6 +37,7 @@ The data is available from the SQL dump file at https://drive.google.com/drive/u
 
 ![databasefieldspic](https://user-images.githubusercontent.com/47819009/121647523-d8dce000-cad9-11eb-98a6-3629af2de0a8.PNG)
 
+To start the application
 
 ```bash
 # Start express server
