@@ -160,6 +160,7 @@ router.put("/:email/profile", auth.authorize, function (req, res, next) {
     });
     return;
   }
+
   let currentDate = moment();
   let birthDate = moment(dob);
 
@@ -182,8 +183,15 @@ router.put("/:email/profile", auth.authorize, function (req, res, next) {
     return;
   }
 
+  const authorization = req.headers.authorization;
+  let token = null;
+  if (authorization.split(" ").length === 2) {
+    token = authorization.split(" ")[1];
+  }
+  const decoded = jwt.verify(token, process.env.SECRET_KEY);
+
   // Check that user is only updating their own information
-  if (auth.CURRENT_USER !== req.params.email) {
+  if (decoded.email !== req.params.email) {
     res.status(403).json({
       error: true,
       message: "Forbidden",

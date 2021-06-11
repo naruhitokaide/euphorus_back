@@ -1,5 +1,4 @@
 const jwt = require("jsonwebtoken");
-module.exports.CURRENT_USER = "";
 
 module.exports.authorize = (req, res, next) => {
   const authorization = req.headers.authorization;
@@ -19,12 +18,10 @@ module.exports.authorize = (req, res, next) => {
       token = authorization.split(" ")[1];
     }
   }
-  
+
   // Verify JWT and check expiration date
   try {
     const decoded = jwt.verify(token, process.env.SECRET_KEY);
-
-    module.exports.CURRENT_USER = decoded.email;
 
     if (decoded.exp < Date.now()) {
       res.status(401).json({ error: true, message: "JWT token has expired" });
