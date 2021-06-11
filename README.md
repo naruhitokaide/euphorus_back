@@ -12,6 +12,8 @@ This project was the backend for assignment 1 in CAB230 which required us to bui
 
 ## Get Started
 
+You need MySQL version 8.0.24, Node and npm to run this project. 
+
 From your command line, first clone this repo:
 
 ```bash
