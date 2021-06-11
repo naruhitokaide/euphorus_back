@@ -10,3 +10,17 @@ This project was the backend for assignment 1 in CAB230 which required us to bui
 - JWT
 - Knex
 
+## Get Started
+
+From your command line, first clone this repo:
+
+```
+# Clone this repository
+$ git clone https://github.com/rgneville/portfolio
+
+# Go into the repository
+$ cd portfolio
+
+# Remove current origin repository
+$ git remote remove origin
+```
