@@ -18,10 +18,12 @@ From your command line, first clone this repo:
 
 ```bash
 # Clone this repository
-$ git clone https://github.com/ben04rogers/cab230assignment2.git
+$ git clone https://github.com/ben04rogers/
+country-happiness-api.git
 
 # Go into the repository
-$ cd cab230assignment2
+$ cd 
+country-happiness-api 
 ```
 
 Then you can install the dependencies using NPM or Yarn:
