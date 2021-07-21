@@ -2,7 +2,7 @@
 
 This project was the backend for assignment 1 in CAB230 which required us to build endpoints to satisfy a predefined Swagger document. It is an API that serves country happiness data.
 
-Can be viewed at https://trusting-babbage-96d918.netlify.app/
+Can be viewed at https://salty-refuge-23420.herokuapp.com/
 
 ## Technologies used
 
